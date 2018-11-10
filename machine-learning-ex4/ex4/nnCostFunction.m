@@ -62,23 +62,52 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+eye_matrix = eye(num_labels);
+y_matrix = eye_matrix(y,:);
 
+X = [ones(m, 1) X];
 
+z2 = X * Theta1';
+a2 = sigmoid(z2);
+a2 = [ones(m, 1) a2];
 
+z3 = a2 * Theta2';
+a3 = sigmoid(z3);
+h = a3;
 
+J = (1/m) * (trace(-y_matrix' * log(h)) - trace((1-y_matrix)' * log(1-h)));
 
+temp_Theat1 = Theta1(:,2:end);
+temp_Theta2 = Theta2(:,2:end);
+regularization = (lambda/(2*m))*(trace(temp_Theat1'*temp_Theat1) + trace(temp_Theta2'*temp_Theta2));
 
+J += regularization;
 
+% feedforward pass - step 1
+a1 = X; % m*n
 
+z2 = a1 * Theta1'; % (m*n) * (h*n)' -> (m*h)
+a2 = sigmoid(z2);
+a2 = [ones(m, 1) a2]; % (m*(h+1))
 
+z3 = a2 * Theta2'; % (m*(h+1)) * (r*(h+1))' -> (m*r)
+a3 = sigmoid(z3);
+    
+% step 2
+d3 = a3 - y_matrix; % (m*r)
 
+% step 3
+d2 = d3*temp_Theta2 .* sigmoidGradient(z2); % (m*r) * (r*h) -> (m*h)
 
+% step 4
+Delta1 = d2'*a1; % (m*h)' * (m*n) -> (h*n)
+Delta2 = d3'*a2; % (m*r)' * (m*(h+1)) -> (r*(h+1))
 
+Theta1(:,1) = 0;
+Theta2(:,1) = 0;
 
-
-
-
-
+Theta1_grad = ((1/m) * Delta1) + (lambda/m)*Theta1; % (h*n)
+Theta2_grad = ((1/m) * Delta2) + (lambda/m)*Theta2; % (r*(h+1))
 
 % -------------------------------------------------------------
 
